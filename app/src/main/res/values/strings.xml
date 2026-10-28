@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ImageGallery</string>
+    <string name="favorite">Favorite</string>
+    <string name="content_description_favorite">Show favorite images</string>
+    <string name="more">More</string>
+    <string name="content_description_more">Show more options</string>
+    <string name="gallery_title">Image Gallery</string>
+    <string name="detail_title">Image Detail</string>
+    <string name="gallery_item">Gallery Item</string>
+</resources>
