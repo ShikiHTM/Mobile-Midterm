@@ -3,33 +3,35 @@ package com.nhom6.imagegallery
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.LruCache
 import android.widget.ImageView
 import com.jakewharton.disklrucache.DiskLruCache
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.security.MessageDigest
-import java.util.concurrent.Executors
 import kotlin.concurrent.Volatile
 
 class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
 
-    private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-    private val cacheSize = maxMemory / 8
-    private val executor = Executors.newFixedThreadPool(4)
-
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @Volatile
     private var diskCache: DiskLruCache? = null
 
-    private val memoryCache = object : LruCache<String, Bitmap>(cacheSize) {
-        override fun sizeOf(key: String?, value: Bitmap): Int {
-            return value.byteCount / 1024
+    private val memoryCache by lazy {
+        val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
+        val cacheSize = maxMemory / 8
+        object : LruCache<String, Bitmap>(cacheSize) {
+            override fun sizeOf(key: String?, value: Bitmap): Int {
+                return value.byteCount / 1024
+            }
         }
     }
 
@@ -73,13 +75,11 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
 
         val bitmapFormMem = memoryCache.get(safeKey)
         if (bitmapFormMem != null) {
-            mainHandler.post {
-                imageView.setImageBitmap(bitmapFormMem)
-            }
+            imageView.setImageBitmap(bitmapFormMem)
             return
         }
 
-        executor.execute {
+        scope.launch {
             val cache = getDiskCache()
 
             var snapshot = cache?.get(safeKey)
@@ -107,7 +107,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
                     }
                 } catch (e: IOException) {
                     Log.e("ImageLoader", "Can not load image from network.", e)
-                    return@execute
+                    return@launch
                 }
 
                 snapshot = cache?.get(safeKey)
@@ -129,7 +129,8 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
                     val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options)
 
                     if (bitmap != null) {
-                        mainHandler.post {
+                        memoryCache.put(safeKey, bitmap)
+                        withContext(Dispatchers.Main) {
                             if (imageView.tag == url) {
                                 imageView.setImageBitmap(bitmap)
                             }
