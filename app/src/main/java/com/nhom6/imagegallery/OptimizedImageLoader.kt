@@ -82,7 +82,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
     override fun cancelRequest(imageView: ImageView) {
         runningJobs.remove(imageView)?.let { job ->
             job.cancel()
-            Log.d(TAG, "🚫 Cancelled image request for target ImageView")
+            Log.d(TAG, "Cancelled image request for target ImageView")
         }
     }
 
@@ -90,7 +90,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         val count = runningJobs.size
         runningJobs.values.forEach { it.cancel() }
         runningJobs.clear()
-        Log.d(TAG, "🚫 Cancelled all $count pending image requests.")
+        Log.d(TAG, "Cancelled all $count pending image requests.")
     }
 
     override fun loadImage(
@@ -248,23 +248,23 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         val totalCacheHits = memHits + dHits
         val hitRate = if (total > 0) (totalCacheHits * 100.0 / total) else 0.0
 
-        val icon = when (source) {
-            "MEMORY_CACHE" -> "⚡ [MEMORY_CACHE]"
-            "DISK_CACHE" -> "💾 [DISK_CACHE]"
-            else -> "🌐 [NETWORK]"
+        val tagPrefix = when (source) {
+            "MEMORY_CACHE" -> "[MEMORY_CACHE]"
+            "DISK_CACHE" -> "[DISK_CACHE]"
+            else -> "[NETWORK]"
         }
 
         val formattedHitRate = String.format(Locale.US, "%.1f", hitRate)
         Log.d(
             TAG,
-            "$icon Loaded in ${duration}ms | Cache Hit Rate: $formattedHitRate% (Mem: $memHits, Disk: $dHits, Net: $netReqs, Total: $total) | URL: $url"
+            "$tagPrefix Loaded in ${duration}ms | Cache Hit Rate: $formattedHitRate% (Mem: $memHits, Disk: $dHits, Net: $netReqs, Total: $total) | URL: $url"
         )
     }
 
     override fun logBenchmarkSummary() {
         val total = totalRequests.get()
         if (total == 0) {
-            Log.d(TAG, "📊 Benchmark Summary: No image requests recorded yet.")
+            Log.d(TAG, "Benchmark Summary: No image requests recorded yet.")
             return
         }
         val memHits = memoryHits.get()
@@ -277,7 +277,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
 
         val summary = """
             ====================================================
-            📊 OPTIMIZED IMAGE LOADER BENCHMARK SUMMARY
+            OPTIMIZED IMAGE LOADER BENCHMARK SUMMARY
             ----------------------------------------------------
             Total Requests    : $total
             Memory Cache Hits : $memHits (${String.format(Locale.US, "%.1f", memHitRate)}%)
@@ -294,7 +294,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         memoryHits.set(0)
         diskHits.set(0)
         networkRequests.set(0)
-        Log.d(TAG, "🔄 Benchmark metrics reset.")
+        Log.d(TAG, "Benchmark metrics reset.")
     }
 
     override fun clearCache() {
