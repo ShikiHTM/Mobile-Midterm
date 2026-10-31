@@ -31,8 +31,12 @@ class DetailFragment: Fragment() {
         val ivFull: ImageView = view.findViewById(R.id.iv_full_size)
         val strategy: ImageLoaderStrategy = OptimizedImageLoader(view.context)
 
-        imageUrl?.let {url ->
-            strategy.loadImage(url, ivFull, 120, 120)
+        val displayMetrics = resources.displayMetrics
+        val targetWidth = displayMetrics.widthPixels.coerceAtLeast(800)
+        val targetHeight = displayMetrics.heightPixels.coerceAtLeast(800)
+
+        imageUrl?.let { url ->
+            strategy.loadImage(url, ivFull, targetWidth, targetHeight)
         }
     }
 
