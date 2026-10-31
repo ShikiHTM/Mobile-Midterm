@@ -3,6 +3,7 @@ package com.nhom6.imagegallery
 import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.ImageView
 import java.net.HttpURLConnection
 import java.net.URL
@@ -15,6 +16,7 @@ class NaiveImageLoader: ImageLoaderStrategy {
 
     override fun loadImage(url: String, imageView: ImageView, targetWidth: Int, targetHeight: Int) {
         imageView.tag = url
+        val startTime = System.currentTimeMillis()
 
         executor.execute {
             try {
@@ -31,6 +33,9 @@ class NaiveImageLoader: ImageLoaderStrategy {
                 inputStream.close()
                 connection.disconnect()
 
+                val endTime = System.currentTimeMillis() - startTime
+                Log.d("ImageBenchmark", "URL: $url | Time: ${endTime}ms")
+
                 mainHandler.post {
                     if (imageView.tag == url && bitmap != null) {
                         imageView.setImageBitmap(bitmap)
@@ -40,5 +45,6 @@ class NaiveImageLoader: ImageLoaderStrategy {
                 e.printStackTrace()
             }
         }
+
     }
 }
