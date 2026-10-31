@@ -1,14 +1,3 @@
----  
-You:  
-rewrite the readme in the codeblock
-Agent:  
-```markdown
-# ImageGallery - Optimized Image Loader (`loader/optimized`)
-
-Android Image Gallery app implementing an optimized custom image loading strategy using Kotlin Coroutines, dual-level caching, downsampling, and job cancellation.
-
----
-
 ## Branch Info
 
 - **Branch**: `loader/optimized`
