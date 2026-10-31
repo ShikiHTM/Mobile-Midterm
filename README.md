@@ -60,4 +60,3 @@
    - **Error Handling (TC06)**: Pass invalid URLs or test timeout responses to verify fallback error drawables.
    - **Dataset Scaling (TC07)**: Select 100, 500, or 1000 images from the top menu to view memory & overall cache hit summary log.
    - **Comparative Analysis (TC08)**: Compare latency and RAM usage logs against the `loader/naive` branch output.
-```
