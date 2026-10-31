@@ -12,5 +12,9 @@ interface ImageLoaderStrategy {
         @DrawableRes placeholderRes: Int? = R.drawable.ic_placeholder_image,
         @DrawableRes errorRes: Int? = R.drawable.ic_error_image
     )
+    fun cancelRequest(imageView: ImageView) {}
+    fun cancelAllRequests() {}
     fun clearCache() {}
+    fun logBenchmarkSummary() {}
+    fun resetBenchmark() {}
 }

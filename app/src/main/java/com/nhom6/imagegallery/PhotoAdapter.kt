@@ -31,6 +31,11 @@ class PhotoAdapter(
         }
     }
 
+    override fun onViewRecycled(holder: PhotoViewHolder) {
+        super.onViewRecycled(holder)
+        imageLoader.cancelRequest(holder.imageView)
+    }
+
     override fun getItemCount(): Int {
         return imageUrls.size
     }

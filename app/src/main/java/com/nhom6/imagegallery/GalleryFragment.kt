@@ -26,7 +26,7 @@ class GalleryFragment: Fragment() {
         val rvGallery: RecyclerView = view.findViewById(R.id.rv_gallery)
         rvGallery.layoutManager = GridLayoutManager(requireContext(), 3)
 
-        val initialUrls: List<String> = DatasetRepository.getUrls(DatasetRepository.TestScale.SMALL)
+        val initialUrls: List<String> = DatasetRepository.getUrls(DatasetRepository.TestScale.LARGE)
         android.util.Log.d("DEBUG_GALLERY", "onViewCreated running! Dataset size: $initialUrls")
 
         val strategy: ImageLoaderStrategy = OptimizedImageLoader(view.context)
@@ -37,7 +37,16 @@ class GalleryFragment: Fragment() {
         rvGallery.adapter = adapter
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (::adapter.isInitialized) {
+            adapter.imageLoader.cancelAllRequests()
+        }
+    }
+
     fun changeTestScale(scale: DatasetRepository.TestScale) {
+        adapter.imageLoader.logBenchmarkSummary()
+        adapter.imageLoader.resetBenchmark()
         val newUrls: List<String> = DatasetRepository.getUrls(scale)
         adapter.updateData(newUrls)
     }
