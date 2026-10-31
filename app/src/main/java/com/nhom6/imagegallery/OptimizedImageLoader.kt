@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.util.LruCache
 import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import com.jakewharton.disklrucache.DiskLruCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         synchronized(this) {
             if (diskCache == null) {
                 try {
-                    val cacheDir = File(context.cacheDir, "images");
+                    val cacheDir = File(context.cacheDir, "images")
                     diskCache = DiskLruCache.open(
                         cacheDir,
                         DISK_APP_VERSION,
@@ -69,7 +70,14 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         return sb.toString()
     }
 
-    override fun loadImage(url: String, imageView: ImageView, targetWidth: Int, targetHeight: Int) {
+    override fun loadImage(
+        url: String,
+        imageView: ImageView,
+        targetWidth: Int,
+        targetHeight: Int,
+        @DrawableRes placeholderRes: Int?,
+        @DrawableRes errorRes: Int?
+    ) {
         imageView.tag = url
         val safeKey = hashKeyForDisk(url)
 
@@ -77,6 +85,12 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
         if (bitmapFormMem != null) {
             imageView.setImageBitmap(bitmapFormMem)
             return
+        }
+
+        if (placeholderRes != null) {
+            imageView.setImageResource(placeholderRes)
+        } else {
+            imageView.setImageDrawable(null)
         }
 
         scope.launch {
@@ -107,13 +121,18 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
                     }
                 } catch (e: IOException) {
                     Log.e("ImageLoader", "Can not load image from network.", e)
+                    withContext(Dispatchers.Main) {
+                        if (imageView.tag == url && errorRes != null) {
+                            imageView.setImageResource(errorRes)
+                        }
+                    }
                     return@launch
                 }
 
                 snapshot = cache?.get(safeKey)
             }
 
-            if(snapshot != null) {
+            if (snapshot != null) {
                 try {
                     val fileInputStream = snapshot.getInputStream(0) as java.io.FileInputStream
                     val fileDescriptor = fileInputStream.fd
@@ -135,27 +154,42 @@ class OptimizedImageLoader(private val context: Context): ImageLoaderStrategy {
                                 imageView.setImageBitmap(bitmap)
                             }
                         }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            if (imageView.tag == url && errorRes != null) {
+                                imageView.setImageResource(errorRes)
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e("ImageLoader", "Can not load image from disk cache.")
                     e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        if (imageView.tag == url && errorRes != null) {
+                            imageView.setImageResource(errorRes)
+                        }
+                    }
                 } finally {
                     snapshot.close()
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    if (imageView.tag == url && errorRes != null) {
+                        imageView.setImageResource(errorRes)
+                    }
                 }
             }
         }
     }
 
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val (height: Int, width: Int) = options.run { outHeight to outWidth}
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
 
         if (height > reqHeight || width > reqWidth) {
             val halfHeight: Int = height / 2
             val halfWidth: Int = width / 2
 
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
             while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
                 inSampleSize *= 2
             }

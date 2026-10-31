@@ -24,7 +24,6 @@ class PhotoAdapter(
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val url = imageUrls[position]
 
-        holder.imageView.setImageDrawable(null)
         imageLoader.loadImage(url, holder.imageView, 200, 200)
 
         holder.imageView.setOnClickListener {
