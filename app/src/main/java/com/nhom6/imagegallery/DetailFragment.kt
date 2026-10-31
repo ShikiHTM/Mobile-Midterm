@@ -29,7 +29,7 @@ class DetailFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val ivFull: ImageView = view.findViewById(R.id.iv_full_size)
-        val strategy: ImageLoaderStrategy = OptimizedImageLoader(view.context)
+        val strategy: ImageLoaderStrategy = NaiveImageLoader()
 
         imageUrl?.let {url ->
             strategy.loadImage(url, ivFull, 120, 120)

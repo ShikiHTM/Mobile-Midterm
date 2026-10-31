@@ -29,7 +29,7 @@ class GalleryFragment: Fragment() {
         val initialUrls: List<String> = DatasetRepository.getUrls(DatasetRepository.TestScale.SMALL)
         android.util.Log.d("DEBUG_GALLERY", "onViewCreated running! Dataset size: $initialUrls")
 
-        val strategy: ImageLoaderStrategy = OptimizedImageLoader(view.context)
+        val strategy: ImageLoaderStrategy = NaiveImageLoader()
 
         adapter = PhotoAdapter(initialUrls, strategy) { url ->
             (requireActivity() as? MainActivity)?.navigateToDetail(url)
